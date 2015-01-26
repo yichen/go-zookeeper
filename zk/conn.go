@@ -49,7 +49,7 @@ type Dialer func(network, address string, timeout time.Duration) (net.Conn, erro
 
 type Conn struct {
 	lastZxid  int64
-	sessionID int64
+	SessionID int64
 	state     State // must be 32-bit aligned
 	xid       int32
 	timeout   int32 // session timeout in milliseconds
@@ -356,7 +356,7 @@ func (c *Conn) authenticate() error {
 		ProtocolVersion: protocolVersion,
 		LastZxidSeen:    c.lastZxid,
 		TimeOut:         c.timeout,
-		SessionID:       c.sessionID,
+		SessionID:       c.SessionID,
 		Passwd:          c.passwd,
 	})
 	if err != nil {
@@ -400,18 +400,18 @@ func (c *Conn) authenticate() error {
 		return err
 	}
 	if r.SessionID == 0 {
-		c.sessionID = 0
+		c.SessionID = 0
 		c.passwd = emptyPassword
 		c.lastZxid = 0
 		c.setState(StateExpired)
 		return ErrSessionExpired
 	}
 
-	if c.sessionID != r.SessionID {
+	if c.SessionID != r.SessionID {
 		atomic.StoreInt32(&c.xid, 0)
 	}
 	c.timeout = r.TimeOut
-	c.sessionID = r.SessionID
+	c.SessionID = r.SessionID
 	c.passwd = r.Passwd
 	c.setState(StateHasSession)
 
